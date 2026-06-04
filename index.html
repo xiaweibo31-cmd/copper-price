@@ -169,6 +169,7 @@ const QURL = '/api/quote';
 const KURL = '/api/kline';
 const DIRECT_Q = "https://push2.eastmoney.com/api/qt/stock/get?secid=113.cum&fields=f43,f44,f45,f46,f48,f50,f51,f57,f58,f60,f168,f169,f170,f171,f115,f116";
 const DIRECT_K = "https://push2.eastmoney.com/api/qt/stock/kline/get?secid=113.cum&klt=101&fqt=1&fields1=f1,f2,f3&fields2=f51,f52,f53,f54,f55,f56,f57&lmt=120";
+const WORKER_URL = ""; // ← 填入 Cloudflare Worker 地址如 "https://copper-api.xxx.workers.dev"（可选，不填则走直连）
 
 async function tryFetch(url, opts) {
   try { return await fetch(url, opts); } catch(e) { return null; }
@@ -176,6 +177,10 @@ async function tryFetch(url, opts) {
 async function fetchQuote() {
   let r = await tryFetch(QURL, {cache:"no-store"});
   if (r && r.ok) return r.json();
+  if (WORKER_URL) {
+    r = await tryFetch(WORKER_URL + "/api/quote", {cache:"no-store"});
+    if (r && r.ok) return r.json();
+  }
   r = await tryFetch(DIRECT_Q, {cache:"no-store", mode:"cors"});
   if (r && r.ok) return r.json();
   throw new Error("quote fetch failed");
@@ -183,6 +188,10 @@ async function fetchQuote() {
 async function fetchKline() {
   let r = await tryFetch(KURL, {cache:"no-store"});
   if (r && r.ok) return r.json();
+  if (WORKER_URL) {
+    r = await tryFetch(WORKER_URL + "/api/kline", {cache:"no-store"});
+    if (r && r.ok) return r.json();
+  }
   r = await tryFetch(DIRECT_K, {cache:"no-store", mode:"cors"});
   if (r && r.ok) return r.json();
   throw new Error("kline fetch failed");
