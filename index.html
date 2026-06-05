@@ -372,7 +372,8 @@ async function doRefresh() {
     await fetchData();
     setStatus('ok','自动刷新');
   } catch(e) {
-    setStatus('error','获取失败');
+    const _d = window.__COPPER_DATA && window.__COPPER_DATA.latest;
+    if (!_d) setStatus('error','获取失败');
   }
   loading = false;
   $('#refreshBtn').disabled = false;
@@ -438,13 +439,14 @@ $('#refreshBtn').addEventListener('click', doRefresh);
     return;
   }
 
-  // PWA/浏览器模式：直接调用 API
+  // 有缓存数据时后台静默刷新，不显示错误
+  const _hasData = !!(window.__COPPER_DATA && window.__COPPER_DATA.latest);
   try {
     setStatus('loading','获取中…');
     await fetchData();
     setStatus('ok','自动刷新');
   } catch(e) {
-    setStatus('error','获取失败');
+    if (!_hasData) setStatus('error','获取失败');
   }
 
   // 自动刷新（60秒）
